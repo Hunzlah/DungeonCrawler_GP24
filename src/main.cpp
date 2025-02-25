@@ -35,6 +35,12 @@ struct Cell {
 std::vector<Cell> grid(COLS * ROWS);
 std::stack<Cell*> stack;
 Cell* current = nullptr;
+Cell* startCell = nullptr;
+Cell* endCell = nullptr;
+
+// Player position
+int playerX = 0, playerY = 0;
+bool gameWon = false;
 
 // Get a cell reference within the grid boundaries
 Cell* GetNeighbor(int x, int y) {
@@ -82,18 +88,36 @@ void InitMaze() {
     current = &grid[0]; // Start at top-left
     current->visited = true;
     stack.push(current);
+
+    startCell = &grid[0];                        // Set start point
+    endCell = &grid[COLS * ROWS - 1];            // Set end point
+    playerX = startCell->x;
+    playerY = startCell->y;
+}
+
+// Move player if there's no wall
+void MovePlayer(int dx, int dy) {
+    if (gameWon) return;
+
+    Cell* currentCell = &grid[playerY * COLS + playerX];
+    if (dx == 1 && !currentCell->walls[RIGHT]) playerX++;
+    if (dx == -1 && !currentCell->walls[LEFT]) playerX--;
+    if (dy == 1 && !currentCell->walls[BOTTOM]) playerY++;
+    if (dy == -1 && !currentCell->walls[TOP]) playerY--;
+
+    // Check if player reached the goal
+    if (playerX == endCell->x && playerY == endCell->y) {
+        gameWon = true;
+    }
 }
 
 int main() {
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Maze Generator - DFS with Raylib");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Maze Game - DFS with Player");
     SetTargetFPS(60);
 
     InitMaze();
 
     while (!WindowShouldClose()) {
-        BeginDrawing();
-        ClearBackground(BLACK);
-
         // Maze generation using DFS
         if (!stack.empty()) {
             Cell* next = GetUnvisitedNeighbor(current);
@@ -108,14 +132,31 @@ int main() {
             }
         }
 
+        // Handle Player Movement
+        if (IsKeyDown(KEY_W)) MovePlayer(0, -1);
+        if (IsKeyDown(KEY_S)) MovePlayer(0, 1);
+        if (IsKeyDown(KEY_A)) MovePlayer(-1, 0);
+        if (IsKeyDown(KEY_D)) MovePlayer(1, 0);
+
+        // Drawing
+        BeginDrawing();
+        ClearBackground(BLACK);
+
         // Draw the maze
         for (const Cell& cell : grid) {
             cell.Draw();
         }
 
-        // Highlight the current cell
-        if (current) {
-            DrawRectangle(current->x * CELL_SIZE, current->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, RED);
+        // Highlight the start and end points
+        DrawRectangle(startCell->x * CELL_SIZE, startCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
+        DrawRectangle(endCell->x * CELL_SIZE, endCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, BLUE);
+
+        // Draw the player
+        DrawRectangle(playerX * CELL_SIZE + 4, playerY * CELL_SIZE + 4, CELL_SIZE - 8, CELL_SIZE - 8, YELLOW);
+
+        // Display win message
+        if (gameWon) {
+            DrawText("YOU WIN!", SCREEN_WIDTH / 2 - 50, SCREEN_HEIGHT / 2, 40, RED);
         }
 
         EndDrawing();
