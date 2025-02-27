@@ -4,12 +4,14 @@
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
+#include <cmath> // for sqrt()
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
 const int CELL_SIZE = 20;
 const int COLS = SCREEN_WIDTH / CELL_SIZE;
 const int ROWS = SCREEN_HEIGHT / CELL_SIZE;
+const int MAX_MOVE_DISTANCE = 5; // Maximum number of tiles the player can move
 
 // Directions: Top, Right, Bottom, Left
 enum Direction { TOP = 0, RIGHT, BOTTOM, LEFT };
@@ -18,7 +20,7 @@ struct Cell {
     int x, y;
     bool visited = false;
     bool walls[4] = { true, true, true, true }; // Top, Right, Bottom, Left
-    
+
     void Draw() const {
         int x0 = x * CELL_SIZE;
         int y0 = y * CELL_SIZE;
@@ -40,6 +42,7 @@ Cell* endCell = nullptr;
 Cell* player = nullptr;
 Cell* current = nullptr;
 std::queue<Cell*> path;
+std::vector<Cell*> validCells; // To store the valid cells player can move to
 
 Cell* GetCell(int x, int y) {
     if (x >= 0 && x < COLS && y >= 0 && y < ROWS)
@@ -77,7 +80,7 @@ void GenerateMaze() {
     current = &grid[0];
     current->visited = true;
     stack.push(current);
-    
+
     while (!stack.empty()) {
         Cell* next = GetUnvisitedNeighbor(current);
         if (next) {
@@ -104,24 +107,50 @@ void InitMaze() {
     player = startCell;
 }
 
+// Calculate the Manhattan distance between two cells
+int GetDistance(Cell* from, Cell* to) {
+    return abs(from->x - to->x) + abs(from->y - to->y);
+}
+
+// Highlight and find valid cells the player can move to within a maximum distance
+void HighlightValidCells() {
+    validCells.clear();
+    for (int y = 0; y < ROWS; ++y) {
+        for (int x = 0; x < COLS; ++x) {
+            Cell* target = GetCell(x, y);
+            if (GetDistance(player, target) <= MAX_MOVE_DISTANCE) {
+                // Check if there's no wall between the player and the target
+                bool canMove = false;
+                if (target->x > player->x) canMove = true;
+                if (target->x < player->x) canMove = true;
+                if (target->y > player->y) canMove = true;
+                if (target->y < player->y) canMove = true;
+
+                if (canMove) {
+                    validCells.push_back(target);
+                }
+            }
+        }
+    }
+}
 std::queue<Cell*> FindShortestPath(Cell* start, Cell* target) {
     std::unordered_map<Cell*, Cell*> cameFrom;
     std::queue<Cell*> frontier;
     frontier.push(target);
     cameFrom[target] = nullptr;
-    
+
     while (!frontier.empty()) {
         Cell* current = frontier.front();
         frontier.pop();
         if (current == start) break;
-        
+
         std::vector<std::pair<Cell*, Direction>> neighbors = {
             { GetCell(current->x, current->y - 1), TOP },
             { GetCell(current->x + 1, current->y), RIGHT },
             { GetCell(current->x, current->y + 1), BOTTOM },
             { GetCell(current->x - 1, current->y), LEFT }
         };
-        
+
         for (auto& [neighbor, dir] : neighbors) {
             if (neighbor && cameFrom.find(neighbor) == cameFrom.end() && !current->walls[dir]) {
                 frontier.push(neighbor);
@@ -129,18 +158,22 @@ std::queue<Cell*> FindShortestPath(Cell* start, Cell* target) {
             }
         }
     }
-    
+
     std::queue<Cell*> path;
     for (Cell* step = start; step; step = cameFrom[step]) path.push(step);
     return path;
 }
-
+// Handle mouse click to move player within the valid range
 void HandleMouseClick() {
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         int mouseX = GetMouseX() / CELL_SIZE;
         int mouseY = GetMouseY() / CELL_SIZE;
         Cell* target = GetCell(mouseX, mouseY);
-        if (target) path = FindShortestPath(player, target);
+
+        // Check if the clicked target is within the valid movement range
+        if (std::find(validCells.begin(), validCells.end(), target) != validCells.end()) {
+            path = FindShortestPath(player, target);
+        }
     }
 }
 
@@ -159,23 +192,34 @@ int main() {
     InitMaze();
 
     while (!WindowShouldClose()) {
+        HighlightValidCells();
         HandleMouseClick();
         MovePlayer();
-        
+
         BeginDrawing();
         ClearBackground(BLACK);
         
+        // Highlight valid move cells
+        if(path.empty()){
+            for (Cell* validCell : validCells) 
+            {
+                DrawRectangle(validCell->x * CELL_SIZE, validCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, DARKGREEN);
+            }
+        }
+
         for (const Cell& cell : grid) {
             cell.Draw();
         }
-        
+
         DrawRectangle(startCell->x * CELL_SIZE, startCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
         DrawRectangle(endCell->x * CELL_SIZE, endCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, BLUE);
         DrawRectangle(player->x * CELL_SIZE + 4, player->y * CELL_SIZE + 4, CELL_SIZE - 8, CELL_SIZE - 8, YELLOW);
+
         
+
         EndDrawing();
     }
-    
+
     CloseWindow();
     return 0;
 }
