@@ -20,6 +20,7 @@ struct Cell {
     int x, y;
     bool visited = false;
     bool walls[4] = { true, true, true, true }; // Top, Right, Bottom, Left
+    bool isCorridor = false;  // Flag to indicate this cell should be a corridor
 
     void Draw() const {
         int x0 = x * CELL_SIZE;
@@ -27,11 +28,25 @@ struct Cell {
         int x1 = x0 + CELL_SIZE;
         int y1 = y0 + CELL_SIZE;
 
-        Color wallColor = WHITE;
-        if (walls[TOP]) DrawLine(x0, y0, x1, y0, wallColor);
-        if (walls[RIGHT]) DrawLine(x1, y0, x1, y1, wallColor);
-        if (walls[BOTTOM]) DrawLine(x1, y1, x0, y1, wallColor);
-        if (walls[LEFT]) DrawLine(x0, y1, x0, y0, wallColor);
+        // Choose colors for walls and corridors
+        Color corridorColor = PURPLE;  // Color for corridors
+        Color wallColor = WHITE;          // Color for walls
+
+        // If the cell is a corridor, don't draw walls
+        if (isCorridor) {
+            for (int i = 0; i < CELL_SIZE / 4; i++)
+            {
+                // Draw diagonal "stairs" effect (simulating steps)
+                DrawLine(x0 + i * 4, y0 + i * 4, x1, y0 + (i + 1) * 4, corridorColor);
+                DrawLine(x0 + i * 4, y1 - (i + 1) * 4, x1, y1 - i * 4, corridorColor);
+            }
+        } else {
+            Color wallColor = WHITE;  // Walls have this color
+            if (walls[TOP]) DrawLine(x0, y0, x1, y0, wallColor);
+            if (walls[RIGHT]) DrawLine(x1, y0, x1, y1, wallColor);
+            if (walls[BOTTOM]) DrawLine(x1, y1, x0, y1, wallColor);
+            if (walls[LEFT]) DrawLine(x0, y1, x0, y0, wallColor);
+        }
     }
 };
 
@@ -91,6 +106,12 @@ void GenerateMaze() {
         } else {
             current = stack.top();
             stack.pop();
+        }
+
+        // Randomly set some cells as corridors (remove all walls)
+        if (rand() % 30 == 0) {  // 10% chance of becoming a corridor cell
+            current->isCorridor = true;
+            std::fill(std::begin(current->walls), std::end(current->walls), false); // Remove all walls
         }
     }
 }
@@ -203,7 +224,7 @@ int main() {
         if(path.empty()){
             for (Cell* validCell : validCells) 
             {
-                DrawRectangle(validCell->x * CELL_SIZE, validCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, DARKGREEN);
+                DrawRectangle(validCell->x * CELL_SIZE, validCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GRAY);
             }
         }
 
@@ -213,10 +234,8 @@ int main() {
 
         DrawRectangle(startCell->x * CELL_SIZE, startCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
         DrawRectangle(endCell->x * CELL_SIZE, endCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, BLUE);
-        DrawRectangle(player->x * CELL_SIZE + 4, player->y * CELL_SIZE + 4, CELL_SIZE - 8, CELL_SIZE - 8, YELLOW);
-
-        
-
+        //DrawRectangle(player->x * CELL_SIZE + 4, player->y * CELL_SIZE + 4, CELL_SIZE - 8, CELL_SIZE - 8, YELLOW);
+        DrawCircle(player->x * CELL_SIZE + 10, player->y * CELL_SIZE + 10, CELL_SIZE - 12, YELLOW);
         EndDrawing();
     }
 
