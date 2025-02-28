@@ -1,3 +1,4 @@
+#pragma once
 #include "Headers.h"
 #include "Constants.h"
 #include "GameStates.h"
