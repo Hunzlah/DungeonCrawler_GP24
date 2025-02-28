@@ -2,13 +2,20 @@
 #include "MainMenu.h"
 #include "GameStates.h"
 #include "GameOver.h"
-
+#include "resource_dir.h"
 int main()
 {
+    
     InitializeGameplayValues();
     currentLevel = 1;
 
+    
+
+    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Maze Game - Click to Move");
+    SearchAndSetResourceDir("resources");
+    fireTexture = LoadTexture("fire.png");
+    grassTexture = LoadTexture("grass.png");
     SetTargetFPS(60);
     InitMaze();
     bool isManualExit = false;
@@ -39,6 +46,8 @@ int main()
         if(isManualExit) break;
     }
 
+    UnloadTexture(grassTexture);
+    UnloadTexture(fireTexture);
     CloseWindow();
     return 0;
 }

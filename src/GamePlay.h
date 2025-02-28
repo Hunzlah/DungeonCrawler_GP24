@@ -37,8 +37,8 @@ struct Cell {
             if (walls[LEFT]) DrawLine(x0, y1, x0, y0, wallColor);
             if(hp != 0){
 
-                //DrawTexture(hp < 0? fireTexture : grassTexture, x0, y0, WHITE);
-                DrawRectangle(x0, y0, CELL_SIZE, CELL_SIZE, hp < 0? RED:GREEN);
+                DrawTexture(hp < 0? fireTexture : grassTexture, x0, y0, WHITE);
+                //DrawRectangle(x0, y0, CELL_SIZE, CELL_SIZE, hp < 0? RED:GREEN);
             }
         }
     }
@@ -253,7 +253,7 @@ void GamePlayHandler()
         DrawCircle(player->x * CELL_SIZE + 10, player->y * CELL_SIZE + 10, CELL_SIZE - 12, YELLOW);
 
         char result[100];
-        strcpy(result, "Score: ");
+        strcpy(result, "HP: ");
         strcat(result, std::to_string(currentScore).c_str());
         DrawText(result, SCREEN_WIDTH/2 - 100, SCREEN_HEIGHT-50, 30, 
         currentScore < 100? RED:GREEN);
