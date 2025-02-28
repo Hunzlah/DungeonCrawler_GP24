@@ -81,7 +81,7 @@ void RemoveWalls(Cell* current, Cell* next) {
 }
 
 void GenerateMaze() {
-    current = &grid[0];
+    current = &grid[rand()%(ROWS*COLS)];
     current->visited = true;
     stack.push(current);
 
@@ -249,5 +249,13 @@ void GamePlayHandler()
         strcpy(result, "Level ");
         strcat(result, std::to_string(currentLevel).c_str());
         DrawText(result, SCREEN_WIDTH/2 + 100, SCREEN_HEIGHT-50, 15, DARKGREEN);
+
+        if(IsKeyDown(KEY_SPACE))
+        {
+            currentGameState = GameOver;
+            InitMaze();
+            currentGameState = Gameplay;
+        }
+
         EndDrawing();
 }
