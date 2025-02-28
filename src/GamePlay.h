@@ -108,13 +108,13 @@ void GenerateMaze() {
         }
         else
         {
-            int randInt = rand() % 3;
+            int randInt = rand() % (4+currentLevel);
             if(randInt == 0){
-                current->hp = -1;
+                current->hp = 0;
             }else if(randInt == 1){
                 current->hp = 1;
             }else{
-                current->hp = 0;
+                current->hp = -1;
             }
         }
     }
@@ -249,8 +249,8 @@ void GamePlayHandler()
 
         DrawRectangle(startCell->x * CELL_SIZE, startCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
         DrawRectangle(endCell->x * CELL_SIZE, endCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, BLUE);
-        //DrawRectangle(player->x * CELL_SIZE + 4, player->y * CELL_SIZE + 4, CELL_SIZE - 8, CELL_SIZE - 8, YELLOW);
-        DrawCircle(player->x * CELL_SIZE + 10, player->y * CELL_SIZE + 10, CELL_SIZE - 12, YELLOW);
+
+        DrawTexture(playerTexture, player->x*CELL_SIZE, player->y*CELL_SIZE, WHITE);
 
         char result[100];
         strcpy(result, "HP: ");

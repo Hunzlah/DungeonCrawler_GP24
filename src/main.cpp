@@ -16,6 +16,7 @@ int main()
     SearchAndSetResourceDir("resources");
     fireTexture = LoadTexture("fire.png");
     grassTexture = LoadTexture("grass.png");
+    playerTexture = LoadTexture("player.png");
     SetTargetFPS(60);
     InitMaze();
     bool isManualExit = false;
@@ -48,6 +49,7 @@ int main()
 
     UnloadTexture(grassTexture);
     UnloadTexture(fireTexture);
+    UnloadTexture(playerTexture);
     CloseWindow();
     return 0;
 }

@@ -9,3 +9,4 @@ const int MAX_MOVE_DISTANCE = 5; // Maximum number of tiles the player can move
 
 Texture2D fireTexture;
 Texture2D grassTexture;
+Texture2D playerTexture;
