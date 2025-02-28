@@ -4,8 +4,7 @@
 
 int main()
 {
-    //currentGameState = Gameplay;
-    currentScore = 1000;
+    InitializeGameplayValues();
     currentLevel = 1;
 
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Maze Game - Click to Move");

@@ -1,6 +1,6 @@
 #include "Headers.h"
 #include "Constants.h"
-
+#include "GameStates.h"
 // Directions: Top, Right, Bottom, Left
 enum Direction { TOP = 0, RIGHT, BOTTOM, LEFT };
 
@@ -38,8 +38,7 @@ struct Cell {
         }
     }
 };
-int currentScore;
-int currentLevel;
+
 std::vector<Cell> grid(COLS * ROWS);
 std::stack<Cell*> stack;
 Cell* startCell = nullptr;
@@ -193,10 +192,24 @@ void MovePlayer() {
     if (!path.empty()) {
         currentScore += path.front()->hp;
         path.front()->hp = 0;
+
+        // Check game over conditions
+        if(path.front() == endCell){
+            gameOverState = LEVEL_PASSED;
+            currentGameState = GameOver;
+        }
+        
+        if(currentScore <= 0){
+            currentScore = 0;
+            gameOverState = LEVEL_FAILED;
+            currentGameState = GameOver;
+        }
+
         path.pop();
         if (!path.empty()) {
             player = path.front();
         }
+        
     }
 }
 
