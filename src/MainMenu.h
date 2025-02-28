@@ -39,6 +39,8 @@ void MainMenuHandler(){
             case HOW_TO_PLAY:
                 DrawText("How to Play", SCREEN_WIDTH / 2 - 100, 100, 30, DARKGRAY);
                 DrawText("Use the mouse button to navigate player. Reach the goal before player Hp gets below zero!", 100, 200, 20, DARKGRAY);
+                DrawText("Green Rooms increase hp by 1", 100, 250, 20, DARKGRAY);
+                DrawText("Red Rooms reduce hp by 1", 100, 300, 20, DARKGRAY);
                 DrawRectangleRec(backButton.rect, LIGHTGRAY);
                 DrawText(backButton.text, backButton.rect.x + 70, backButton.rect.y + 15, 20, DARKGRAY);
                 if (IsButtonClicked(backButton)) currentMenuScreen = MENU;

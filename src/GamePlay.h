@@ -35,7 +35,11 @@ struct Cell {
             if (walls[RIGHT]) DrawLine(x1, y0, x1, y1, wallColor);
             if (walls[BOTTOM]) DrawLine(x1, y1, x0, y1, wallColor);
             if (walls[LEFT]) DrawLine(x0, y1, x0, y0, wallColor);
-            if(hp != 0) DrawText(std::to_string(hp).c_str(), (x0+x1)/2, (y0+y1)/2, 10, hp < 0? RED:GREEN);
+            if(hp != 0){
+
+                //DrawTexture(hp < 0? fireTexture : grassTexture, x0, y0, WHITE);
+                DrawRectangle(x0, y0, CELL_SIZE, CELL_SIZE, hp < 0? RED:GREEN);
+            }
         }
     }
 };
@@ -48,7 +52,7 @@ Cell* player = nullptr;
 Cell* current = nullptr;
 std::queue<Cell*> path;
 std::vector<Cell*> validCells; // To store the valid cells player can move to
-
+Color transparentGray = {128, 128, 128, 210};
 Cell* GetCell(int x, int y) {
     if (x >= 0 && x < COLS && y >= 0 && y < ROWS)
         return &grid[y * COLS + x];
@@ -97,13 +101,21 @@ void GenerateMaze() {
             stack.pop();
         }
 
-        if (rand() % 100 == 0) {  // 10% chance of becoming a corridor cell
+        if (rand() % 100 < 3) {  // Chance of becoming a corridor cell
             current->isCorridor = true;
+            current->hp = 0;
             std::fill(std::begin(current->walls), std::end(current->walls), false); // Remove all walls
         }
         else
         {
-            current->hp = (rand() % 50 == 0) ? 0 : (rand()%10)-5;
+            int randInt = rand() % 3;
+            if(randInt == 0){
+                current->hp = -1;
+            }else if(randInt == 1){
+                current->hp = 1;
+            }else{
+                current->hp = 0;
+            }
         }
     }
 }
@@ -223,16 +235,16 @@ void GamePlayHandler()
         BeginDrawing();
         ClearBackground(BLACK);
         
+        for (const Cell& cell : grid) {
+            cell.Draw();
+        }
+
         // Highlight valid move cells
         if(path.empty()){
             for (Cell* validCell : validCells) 
             {
-                DrawRectangle(validCell->x * CELL_SIZE, validCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GRAY);
+                DrawRectangle(validCell->x * CELL_SIZE, validCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, transparentGray);
             }
-        }
-
-        for (const Cell& cell : grid) {
-            cell.Draw();
         }
 
         DrawRectangle(startCell->x * CELL_SIZE, startCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, GREEN);
@@ -248,7 +260,7 @@ void GamePlayHandler()
 
         strcpy(result, "Level ");
         strcat(result, std::to_string(currentLevel).c_str());
-        DrawText(result, SCREEN_WIDTH/2 + 100, SCREEN_HEIGHT-50, 15, DARKGREEN);
+        DrawText(result, SCREEN_WIDTH/2 + 250, SCREEN_HEIGHT-50, 15, DARKGREEN);
 
         if(IsKeyDown(KEY_SPACE))
         {
