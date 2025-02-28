@@ -1,6 +1,7 @@
 #include "GamePlay.h"
 #include "MainMenu.h"
 #include "GameStates.h"
+#include "GameOver.h"
 
 int main()
 {
@@ -29,7 +30,7 @@ int main()
             GamePlayHandler();
             break;
         case GameOver:
-
+            GameOverHandler();
             break;
 
         default:

@@ -1,21 +1,7 @@
 #include "Headers.h"
 #include "Constants.h"
 #include "GameStates.h"
-
-
-// Button struct for easier button handling
-struct Button {
-    Rectangle rect;
-    const char* text;
-};
-
-// Function to check if a button is clicked
-bool IsButtonClicked(Button button) {
-    return (CheckCollisionPointRec(GetMousePosition(), button.rect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON));
-}
-
-// Set initial game screen
-
+#include "HelperMethods.h"
 
 // Define buttons
 Button playButton = {{SCREEN_WIDTH / 2 - 100, 200, 200, 50}, "Play"};

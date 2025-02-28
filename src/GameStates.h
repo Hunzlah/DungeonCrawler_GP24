@@ -14,7 +14,7 @@ GameState currentGameState = MainMenu;
 MenuScreen currentMenuScreen = MENU;
 GameOverState gameOverState = LEVEL_PASSED;
 
-int defaultScore = 100;
+int defaultScore = 500;
 int currentScore;
 int currentLevel;
 
