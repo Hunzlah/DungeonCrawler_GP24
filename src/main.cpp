@@ -4,24 +4,26 @@
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
-#include <cmath> // for sqrt()
+#include <cmath>
+#include <string>
+#include <string.h>
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 800;
 const int CELL_SIZE = 20;
 const int COLS = SCREEN_WIDTH / CELL_SIZE;
-const int ROWS = SCREEN_HEIGHT / CELL_SIZE;
+const int ROWS = SCREEN_HEIGHT / (CELL_SIZE*1.25f);
 const int MAX_MOVE_DISTANCE = 5; // Maximum number of tiles the player can move
 
 // Directions: Top, Right, Bottom, Left
 enum Direction { TOP = 0, RIGHT, BOTTOM, LEFT };
-
+enum GameState{Menu, Gameplay, GameOver};
 struct Cell {
     int x, y;
     bool visited = false;
     bool walls[4] = { true, true, true, true }; // Top, Right, Bottom, Left
     bool isCorridor = false;  // Flag to indicate this cell should be a corridor
-
+    int hp;
     void Draw() const {
         int x0 = x * CELL_SIZE;
         int y0 = y * CELL_SIZE;
@@ -46,10 +48,12 @@ struct Cell {
             if (walls[RIGHT]) DrawLine(x1, y0, x1, y1, wallColor);
             if (walls[BOTTOM]) DrawLine(x1, y1, x0, y1, wallColor);
             if (walls[LEFT]) DrawLine(x0, y1, x0, y0, wallColor);
+            if(hp != 0) DrawText(std::to_string(hp).c_str(), (x0+x1)/2, (y0+y1)/2, 10, hp < 0? RED:GREEN);
         }
     }
 };
-
+GameState currentGameState;
+int currentScore;
 std::vector<Cell> grid(COLS * ROWS);
 std::stack<Cell*> stack;
 Cell* startCell = nullptr;
@@ -108,10 +112,13 @@ void GenerateMaze() {
             stack.pop();
         }
 
-        // Randomly set some cells as corridors (remove all walls)
-        if (rand() % 30 == 0) {  // 10% chance of becoming a corridor cell
+        if (rand() % 100 == 0) {  // 10% chance of becoming a corridor cell
             current->isCorridor = true;
             std::fill(std::begin(current->walls), std::end(current->walls), false); // Remove all walls
+        }
+        else
+        {
+            current->hp = (rand() % 50 == 0) ? 0 : (rand()%10)-5;
         }
     }
 }
@@ -200,6 +207,8 @@ void HandleMouseClick() {
 
 void MovePlayer() {
     if (!path.empty()) {
+        currentScore += path.front()->hp;
+        path.front()->hp = 0;
         path.pop();
         if (!path.empty()) {
             player = path.front();
@@ -208,6 +217,9 @@ void MovePlayer() {
 }
 
 int main() {
+    currentGameState = Gameplay;
+    currentScore = 1000;
+
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Maze Game - Click to Move");
     SetTargetFPS(60);
     InitMaze();
@@ -236,6 +248,12 @@ int main() {
         DrawRectangle(endCell->x * CELL_SIZE, endCell->y * CELL_SIZE, CELL_SIZE, CELL_SIZE, BLUE);
         //DrawRectangle(player->x * CELL_SIZE + 4, player->y * CELL_SIZE + 4, CELL_SIZE - 8, CELL_SIZE - 8, YELLOW);
         DrawCircle(player->x * CELL_SIZE + 10, player->y * CELL_SIZE + 10, CELL_SIZE - 12, YELLOW);
+
+        char result[100];
+        strcpy(result, "Score: ");
+        strcat(result, std::to_string(currentScore).c_str());
+        DrawText(result, SCREEN_WIDTH/2, SCREEN_HEIGHT-50, 30, 
+        currentScore < 100? RED:GREEN);
         EndDrawing();
     }
 
